@@ -32,11 +32,13 @@ services:
       - ".:/mnt/ddev_config"
       - "ddev-global-cache:/mnt/ddev-global-cache"
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:6274 || exit 1"]
-      interval: 10s
+      # Alpine's busybox wget resolves `localhost` to IPv6 first; the inspector
+      # binds IPv4 only. Use 127.0.0.1 explicitly. --spider is HEAD-only.
+      test: ["CMD-SHELL", "wget -q --spider -T 3 http://127.0.0.1:6274/"]
+      interval: 5s
       timeout: 5s
-      retries: 12
-      start_period: 30s
+      retries: 6
+      start_period: 10s
     networks:
       - default
       - ddev_default
