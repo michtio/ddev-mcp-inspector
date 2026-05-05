@@ -1,0 +1,61 @@
+name: Bug report
+description: Something broke. Help me reproduce it.
+labels: [bug]
+body:
+  - type: checkboxes
+    attributes:
+      label: Preliminary checklist
+      options:
+        - label: I am using a current stable DDEV (`ddev version`)
+          required: true
+        - label: I am using the latest stable version of this add-on
+          required: true
+        - label: I have read the README and TROUBLESHOOTING sections that exist
+          required: true
+  - type: input
+    attributes:
+      label: DDEV version
+      placeholder: 'v1.25.x'
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Operating system
+      placeholder: 'macOS 26.x / Ubuntu 24.04 / WSL2 + Windows 11'
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What happened instead?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ddev config --project-name=test --project-type=php
+        2. ddev start
+        3. ddev add-on get michtio/ddev-mcp-inspector
+        4. ddev restart
+        5. …
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Inspector logs
+      description: |
+        Paste output of `ddev logs -s mcp-inspector --tail=200`. Trim secrets.
+      render: shell
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Anything else?
+      description: Screenshots, related issues, links — anything that helps.
+    validations:
+      required: false

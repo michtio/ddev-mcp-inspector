@@ -1,0 +1,25 @@
+name: Feature request
+description: Suggest an idea.
+labels: [enhancement]
+body:
+  - type: checkboxes
+    attributes:
+      label: Is there an existing issue for this?
+      options:
+        - label: I searched existing issues and discussions
+          required: true
+  - type: textarea
+    attributes:
+      label: What problem are you trying to solve?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What would you like to see?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Alternatives you've considered
+    validations:
+      required: false

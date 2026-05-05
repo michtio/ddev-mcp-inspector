@@ -1,0 +1,51 @@
+#ddev-generated
+services:
+  mcp-inspector:
+    container_name: ddev-${DDEV_SITENAME}-mcp-inspector
+    hostname: mcp-inspector
+    build:
+      context: ./mcp-inspector-build
+      dockerfile: Dockerfile
+    image: ddev-${DDEV_SITENAME}-mcp-inspector
+    restart: "no"
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: ${DDEV_APPROOT}
+    environment:
+      HOST: "0.0.0.0"
+      CLIENT_PORT: "6274"
+      SERVER_PORT: "6277"
+      DANGEROUSLY_OMIT_AUTH: "true"
+      MCP_AUTO_OPEN_ENABLED: "false"
+      MCP_PROXY_FULL_ADDRESS: "https://${DDEV_HOSTNAME}:6278"
+      ALLOWED_ORIGINS: "https://${DDEV_HOSTNAME}:6275,http://${DDEV_HOSTNAME}:6274,http://localhost:6274,http://127.0.0.1:6274"
+      MCP_SERVER_REQUEST_TIMEOUT: "10000"
+      MCP_REQUEST_TIMEOUT_RESET_ON_PROGRESS: "true"
+      MCP_REQUEST_MAX_TOTAL_TIMEOUT: "60000"
+      VIRTUAL_HOST: ${DDEV_HOSTNAME}
+      HTTP_EXPOSE: "6274:6274,6277:6277"
+      HTTPS_EXPOSE: "6275:6274,6278:6277"
+    expose:
+      - "6274"
+      - "6277"
+    volumes:
+      - ".:/mnt/ddev_config"
+      - "ddev-global-cache:/mnt/ddev-global-cache"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:6274 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks:
+      - default
+      - ddev_default
+
+networks:
+  ddev_default:
+    external: true
+
+volumes:
+  ddev-global-cache:
+    name: ddev-global-cache
+    external: true

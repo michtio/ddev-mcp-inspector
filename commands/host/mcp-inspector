@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+#ddev-generated
+## Description: Open the MCP Inspector UI, or check status / view logs / show URLs
+## Usage: mcp-inspector [open|status|logs|urls|version]
+## Example: "ddev mcp-inspector" or "ddev mcp-inspector status"
+
+set -eu -o pipefail
+
+ACTION="${1:-open}"
+HOSTNAME="${DDEV_HOSTNAME:-${DDEV_SITENAME}.${DDEV_TLD:-ddev.site}}"
+
+CLIENT_HTTPS_URL="https://${HOSTNAME}:6275"
+CLIENT_HTTP_URL="http://${HOSTNAME}:6274"
+PROXY_HTTPS_URL="https://${HOSTNAME}:6278"
+PROXY_HTTP_URL="http://${HOSTNAME}:6277"
+
+print_urls() {
+  printf "Client UI:   %s   (HTTP fallback: %s)\n" "${CLIENT_HTTPS_URL}" "${CLIENT_HTTP_URL}"
+  printf "Proxy:       %s   (HTTP fallback: %s)\n" "${PROXY_HTTPS_URL}" "${PROXY_HTTP_URL}"
+  printf "From inside DDEV containers: http://mcp-inspector:6274 (UI), http://mcp-inspector:6277 (proxy)\n"
+}
+
+container_running() {
+  docker inspect -f '{{.State.Running}}' "ddev-${DDEV_SITENAME}-mcp-inspector" 2>/dev/null | grep -q true
+}
+
+ui_responding() {
+  curl -s -k -o /dev/null -w '%{http_code}' --max-time 5 "${CLIENT_HTTPS_URL}/" 2>/dev/null | grep -q '^200$'
+}
+
+case "${ACTION}" in
+  status)
+    if ! container_running; then
+      echo "Container ddev-${DDEV_SITENAME}-mcp-inspector is not running."
+      echo "Run 'ddev start' to bring it up. 'ddev mcp-inspector logs' to investigate."
+      exit 1
+    fi
+    if ui_responding; then
+      echo "MCP Inspector is running."
+      print_urls
+    else
+      echo "Container is up but the client UI did not respond on ${CLIENT_HTTPS_URL}."
+      echo "It may still be starting (first build takes ~30s). 'ddev mcp-inspector logs' to follow output."
+      exit 1
+    fi
+    ;;
+  logs)
+    exec ddev logs -s mcp-inspector -f
+    ;;
+  urls)
+    print_urls
+    ;;
+  version)
+    ddev exec -s mcp-inspector mcp-inspector --version 2>/dev/null \
+      || ddev exec -s mcp-inspector npm list -g @modelcontextprotocol/inspector --depth=0
+    ;;
+  open|*)
+    print_urls
+    echo ""
+    echo "Opening client UI in your browser…"
+    case "${OSTYPE}" in
+      linux*)   xdg-open "${CLIENT_HTTPS_URL}" >/dev/null 2>&1 & ;;
+      darwin*)  open "${CLIENT_HTTPS_URL}" ;;
+      msys*|cygwin*|mingw*) start "${CLIENT_HTTPS_URL}" ;;
+      *) echo "Unrecognised OSTYPE='${OSTYPE}'. Open ${CLIENT_HTTPS_URL} manually." ;;
+    esac
+    ;;
+esac

@@ -1,0 +1,39 @@
+#ddev-generated
+name: mcp-inspector
+
+description: |
+  Visual MCP (Model Context Protocol) Inspector inside your DDEV project.
+  Test stdio, SSE, and Streamable HTTP MCP servers from any framework
+  (Craft CMS, Laravel, Drupal, Node, Python, …) without installing Node
+  on the host. Inspector v0.21.x pre-installed; restarts in seconds.
+
+ddev_version_constraint: '>= v1.24.10'
+
+project_files:
+  - docker-compose.mcp-inspector.yaml
+  - mcp-inspector-build/Dockerfile
+  - commands/host/mcp-inspector
+
+post_install_actions:
+  - chmod +x commands/host/mcp-inspector
+
+removal_actions:
+  - |
+    if [ -f .ddev/docker-compose.mcp-inspector.yaml ]; then
+      if grep -q '#ddev-generated' .ddev/docker-compose.mcp-inspector.yaml; then
+        rm -f .ddev/docker-compose.mcp-inspector.yaml
+      fi
+    fi
+  - |
+    if [ -f .ddev/mcp-inspector-build/Dockerfile ]; then
+      if grep -q '#ddev-generated' .ddev/mcp-inspector-build/Dockerfile; then
+        rm -f .ddev/mcp-inspector-build/Dockerfile
+        rmdir .ddev/mcp-inspector-build 2>/dev/null || true
+      fi
+    fi
+  - |
+    if [ -f .ddev/commands/host/mcp-inspector ]; then
+      if grep -q '#ddev-generated' .ddev/commands/host/mcp-inspector; then
+        rm -f .ddev/commands/host/mcp-inspector
+      fi
+    fi

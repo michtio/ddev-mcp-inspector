@@ -1,0 +1,57 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+  pull_request:
+  schedule:
+    # Daily at 08:25 UTC — catches upstream MCP Inspector regressions early.
+    - cron: '25 08 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  tests:
+    name: tests (DDEV ${{ matrix.ddev_version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ddev_version: [stable, HEAD]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run add-on tests
+        uses: ddev/github-action-add-on-test@v2
+        with:
+          ddev_version: ${{ matrix.ddev_version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    name: release
+    needs: tests
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          prerelease: ${{ contains(github.ref, '-beta') || contains(github.ref, '-rc') }}
+          generate_release_notes: true
+          files: |
+            README.md
+            CHANGELOG.md
+            LICENSE
