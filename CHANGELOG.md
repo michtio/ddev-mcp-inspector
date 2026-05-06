@@ -38,11 +38,20 @@ what works.
   reported failure.
 
 ### Removed
-- Unused `/var/run/docker.sock` mount.
-- Unused `apk add git` from container startup.
+- Unused `apk add git` from container startup (Inspector npm package has no
+  git-based deps).
 - Orphan `.ddev/mcp-servers/.gitkeep` placeholder.
 - Orphan `.gitignore` reference to `.ddev/.env.mcp-inspector`.
 - The fictional `mcp-connect` web command (it never shipped).
+
+### Notes
+- The `/var/run/docker.sock` mount is intentional and required: it lets the
+  Inspector container spawn stdio MCP servers in sibling DDEV containers
+  via `docker exec`. Combined with the docker-cli installed in the image,
+  this is what makes the multi-framework story work without putting Node /
+  PHP / Python on the host. Security: this gives the Inspector container
+  root-equivalent access to the host Docker daemon. Acceptable for a
+  local-dev tool; do not use this image in production.
 
 ### Migration from `craftpulse/ddev-mcp-inspector` 1.0.0-beta.1
 This add-on is now published as `michtio/ddev-mcp-inspector`. To migrate:

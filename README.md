@@ -32,43 +32,44 @@ Open the client UI, pick a transport, and connect. Below are working snippets fo
 
 ### Craft CMS plugin (e.g. cortex)
 
-In the Inspector UI: **Transport: STDIO** → **Command:**
+In the Inspector UI: **Transport: STDIO**, **Command:** `docker`, **Arguments:** (one of these depending on your `composer_root`)
+
 ```
-docker exec -i ddev-<project>-web craft cortex/serve
+exec -i ddev-<project>-web php /var/www/html/craft cortex/serve         # composer_root = "" (default)
+exec -i ddev-<project>-web php /var/www/html/<dir>/craft cortex/serve   # composer_root = "<dir>"
 ```
 
-If the Inspector is in the same DDEV project as your Craft install, this also works:
-```
-craft cortex/serve
-```
+`craft` is a PHP script (not in `$PATH`, not chmod +x) so it has to be invoked via `php` with its absolute path. Check `composer_root` in your `.ddev/config.yaml` to find the right directory.
+
+Tip: if you'll connect repeatedly, drop a one-line wrapper at `.ddev/commands/web/craft-mcp` that does `php /var/www/html/<your-composer-root>/craft cortex/serve` — then the inspector arguments simplify to `exec -i ddev-<project>-web craft-mcp`.
 
 ### Laravel (Boost or any Artisan-driven MCP)
 
-```
-docker exec -i ddev-<project>-web php artisan boost:mcp
-```
+**Command:** `docker`, **Arguments:** `exec -i ddev-<project>-web php artisan boost:mcp`
 
 ### Drupal (drush-mcp or a custom Drush command)
 
-```
-docker exec -i ddev-<project>-web drush mcp:serve
-```
+**Command:** `docker`, **Arguments:** `exec -i ddev-<project>-web drush mcp:serve`
 
 ### Node MCP server in your project
 
-```
-docker exec -i ddev-<project>-web node /var/www/html/path/to/server.mjs
-```
+**Command:** `docker`, **Arguments:** `exec -i ddev-<project>-web node /var/www/html/path/to/server.mjs`
 
 ### Python MCP server in your project
 
-```
-docker exec -i ddev-<project>-web python /var/www/html/path/to/server.py
-```
+**Command:** `docker`, **Arguments:** `exec -i ddev-<project>-web python /var/www/html/path/to/server.py`
 
 ### Streamable HTTP / SSE servers
 
 In the Inspector UI: **Transport: Streamable HTTP** (or **SSE**) and enter the URL — typically your project's HTTPS endpoint plus the route the server listens on. From inside DDEV containers, the Inspector reaches services on the project's internal Docker network.
+
+### Why `docker exec` instead of running the server locally?
+
+The Inspector container is on the project's Docker network and has access to the host's Docker socket — so it spawns the MCP server as a sibling-container process. That means:
+
+- No need to install Node / PHP / Python / framework runtimes on your host.
+- The MCP server runs in the same environment as your app (same DB, same file paths, same env vars).
+- One `ddev start` brings everything up.
 
 ## Commands
 

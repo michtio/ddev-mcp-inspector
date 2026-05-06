@@ -37,6 +37,12 @@ services:
     volumes:
       - ".:/mnt/ddev_config"
       - "ddev-global-cache:/mnt/ddev-global-cache"
+      # Required so the inspector can `docker exec` into sibling DDEV
+      # containers (Craft web, Laravel web, etc.) to spawn stdio MCP servers.
+      # SECURITY: this gives the inspector container root-equivalent access to
+      # the host Docker daemon. Acceptable for a local-dev tool; do NOT use
+      # this image in production.
+      - "/var/run/docker.sock:/var/run/docker.sock"
     healthcheck:
       # Alpine's busybox wget resolves `localhost` to IPv6 first; the inspector
       # binds IPv4 only. Use 127.0.0.1 explicitly. --spider is HEAD-only.

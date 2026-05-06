@@ -15,7 +15,12 @@ LABEL org.opencontainers.image.source="https://github.com/michtio/ddev-mcp-inspe
 LABEL org.opencontainers.image.description="MCP Inspector pre-installed for DDEV"
 LABEL org.opencontainers.image.licenses="MIT"
 
-RUN npm install -g "@modelcontextprotocol/inspector@${MCP_INSPECTOR_VERSION}" \
+# docker-cli lets the inspector spawn stdio MCP servers in sibling containers
+# via `docker exec ...`. Combined with the docker.sock mount in the compose,
+# this is how a Craft / Laravel / Drupal / etc. server in the project's web
+# container becomes reachable from the inspector.
+RUN apk add --no-cache docker-cli \
+    && npm install -g "@modelcontextprotocol/inspector@${MCP_INSPECTOR_VERSION}" \
     && npm cache clean --force
 
 WORKDIR /app
