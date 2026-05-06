@@ -12,14 +12,21 @@ setup() {
 
   export GITHUB_REPO=michtio/ddev-mcp-inspector
 
+  # Without BATS_LIB_PATH the brew-installed libraries on a GitHub Ubuntu
+  # runner can't be resolved by `bats_load_library`. Loading the libs is
+  # what makes `assert_success` / `assert_output` available.
+  TEST_BREW_PREFIX="$(brew --prefix 2>/dev/null || true)"
+  export BATS_LIB_PATH="${BATS_LIB_PATH:-}:${TEST_BREW_PREFIX}/lib:/usr/lib/bats"
   bats_load_library bats-assert
   bats_load_library bats-file
   bats_load_library bats-support
 
-  export DIR="$(cd "$(dirname "${BATS_TEST_FILENAME}")/.." && pwd)"
+  export DIR="$(cd "$(dirname "${BATS_TEST_FILENAME}")/.." >/dev/null 2>&1 && pwd)"
   export PROJNAME="test-$(basename "${GITHUB_REPO}")"
+  mkdir -p "${HOME}/tmp"
   export TESTDIR="$(mktemp -d "${HOME}/tmp/${PROJNAME}.XXXXXX")"
   export DDEV_NONINTERACTIVE=true
+  export DDEV_NO_INSTRUMENTATION=true
 
   ddev delete -Oy "${PROJNAME}" >/dev/null 2>&1 || true
 
