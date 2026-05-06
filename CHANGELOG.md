@@ -6,57 +6,47 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.0.0] — 2026-05-05
 
-Initial stable release. Full rewrite from a 2025 beta — the previous codebase
-shipped a working client UI but documented features (a `mcp-connect` web
-command, persistent volumes, Bats tests, health checks, an HTTPS proxy URL on
-:6278) that were never implemented or were broken. This release ships only
-what works.
+Initial release. The [MCP Inspector](https://github.com/modelcontextprotocol/inspector)
+running as a service inside your DDEV project. Test stdio, SSE, and
+Streamable HTTP MCP servers from any framework — Craft, Laravel, Drupal,
+Node, Python, anything you build inside DDEV — without installing Node on
+the host.
 
-### Added
-- Pre-installed MCP Inspector image. The Inspector binary is baked into the
-  image at build time, so `ddev start` after the first build comes up in
+### Highlights
+- **Pre-installed Inspector image.** The Inspector binary is baked in at
+  build time, so `ddev start` after the first build comes up in a few
   seconds instead of waiting on `npm install`.
-- Pinned MCP Inspector version (`@modelcontextprotocol/inspector@0.21.2`).
+- **Pinned upstream version** (`@modelcontextprotocol/inspector@0.21.2`).
   Bumps are explicit edits to the Dockerfile, not silent `@latest` drift.
-- Real Bats test suite covering install, restart, client UI reachability,
+- **Sibling-container MCP servers.** The Inspector container has access
+  to the Docker socket and ships with `docker-cli`, so it spawns stdio
+  MCP servers in your project's web container via `docker exec`. No
+  framework runtimes on the host.
+- **Bats test suite** covering install, restart, client UI reachability,
   proxy reachability, host command output, and add-on removal.
-- CI matrix `[stable, HEAD]` against `ddev/github-action-add-on-test@v2`
-  with daily cron schedule for upstream regression detection.
-- `removal_actions` in `install.yaml` — `ddev add-on remove mcp-inspector`
-  now leaves the project clean.
-- `commands/host/mcp-inspector` actions: `open` (default), `status`, `logs`,
-  `urls`, `version`. Status checks the actual reachable endpoint, not a
-  nonexistent `/health` route.
-- GitHub Sponsors and Buy Me a Coffee links (see `.github/FUNDING.yml`).
+- **CI matrix** `[stable, HEAD]` on `ddev/github-action-add-on-test@v2`
+  with a daily cron schedule for upstream-regression detection.
+- **Clean removal.** `ddev add-on remove mcp-inspector` reverses the
+  install via `removal_actions` in `install.yaml`.
+- **Host command** with sensible actions: `open` (default), `status`,
+  `logs`, `urls`, `version`. `status` checks the actually reachable
+  endpoint, not a `/health` route the Inspector doesn't expose.
+- **Sponsorship links** via [GitHub Sponsors](https://github.com/sponsors/michtio)
+  and [Buy Me a Coffee](https://www.buymeacoffee.com/michtio) — see
+  `.github/FUNDING.yml`.
 
-### Fixed
-- Proxy URL on HTTPS:6277 actually works end-to-end. The previous beta
-  documented `:6278` but never bound it; this release exposes the proxy
-  on HTTPS:6277 directly (matching the inspector's `SERVER_PORT`, which
-  is what the inspector's browser-side JS uses to derive the proxy URL).
-- `ddev mcp-inspector status` returns truthful output. Previously always
-  reported failure.
+### Endpoints
+- Client UI: `https://<project>.ddev.site:6275` (HTTP fallback `:6274`)
+- Proxy: `https://<project>.ddev.site:6277` (HTTPS-only externally so
+  the browser can fetch from the HTTPS UI without mixed-content errors)
+- From sibling containers: `http://mcp-inspector:6274` and
+  `http://mcp-inspector:6277`
 
-### Removed
-- Unused `apk add git` from container startup (Inspector npm package has no
-  git-based deps).
-- Orphan `.ddev/mcp-servers/.gitkeep` placeholder.
-- Orphan `.gitignore` reference to `.ddev/.env.mcp-inspector`.
-- The fictional `mcp-connect` web command (it never shipped).
-
-### Notes
-- The `/var/run/docker.sock` mount is intentional and required: it lets the
-  Inspector container spawn stdio MCP servers in sibling DDEV containers
-  via `docker exec`. Combined with the docker-cli installed in the image,
-  this is what makes the multi-framework story work without putting Node /
-  PHP / Python on the host. Security: this gives the Inspector container
-  root-equivalent access to the host Docker daemon. Acceptable for a
-  local-dev tool; do not use this image in production.
-
-### Migration from `craftpulse/ddev-mcp-inspector` 1.0.0-beta.1
-This add-on is now published as `michtio/ddev-mcp-inspector`. To migrate:
-```bash
-ddev add-on remove mcp-inspector
-ddev add-on get michtio/ddev-mcp-inspector
-ddev restart
-```
+### Security note
+The `/var/run/docker.sock` mount is intentional: it's what lets the
+Inspector container spawn stdio MCP servers in sibling DDEV containers.
+This gives the Inspector container root-equivalent access to the host
+Docker daemon. Acceptable for a local-dev tool; **do not run this image
+in production** or expose it to untrusted networks. `DANGEROUSLY_OMIT_AUTH`
+defaults to `true` for the same reason — fine on DDEV-local, do not
+publish.

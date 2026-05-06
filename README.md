@@ -118,16 +118,6 @@ This removes the docker-compose service, the build context, and the host command
 - DDEV `>= v1.24.10`
 - Docker
 
-## Migrating from `craftpulse/ddev-mcp-inspector`
-
-This add-on used to live under `craftpulse/`. It moved to `michtio/` for a clean rebuild. To migrate an existing project:
-
-```bash
-ddev add-on remove mcp-inspector
-ddev add-on get michtio/ddev-mcp-inspector
-ddev restart
-```
-
 ## Sponsoring
 
 If this add-on saves you time on MCP development, consider [sponsoring on GitHub](https://github.com/sponsors/michtio) or [Buy Me a Coffee](https://www.buymeacoffee.com/michtio). Sponsors keep this maintained and the daily upstream-regression CI running.
