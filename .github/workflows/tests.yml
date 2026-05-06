@@ -34,6 +34,11 @@ jobs:
         with:
           ddev_version: ${{ matrix.ddev_version }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          # Override the action's default `bats tests --filter-tags !release`
+          # — bats-core 1.13.0 treats `!tag` against tests with no tags as
+          # "no match" and reports `1..N` planned but 0 executed (exit 1).
+          # We have no release-tagged tests, so just run everything.
+          test_command: "bats tests"
 
   release:
     name: release
