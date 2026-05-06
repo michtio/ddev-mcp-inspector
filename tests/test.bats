@@ -78,25 +78,30 @@ teardown() {
   assert_output "200"
 }
 
-@test "proxy responds on HTTPS:6278" {
+@test "proxy /health returns 200 with CORS header on HTTPS:6277" {
   ddev add-on get "${DIR}" >/dev/null
   ddev restart -y >/dev/null
 
-  # Proxy returns 404 on bare GET (no root route) but the connection MUST
-  # succeed. We check for any HTTP code, not 200.
   local attempt=0
   while [ "${attempt}" -lt 30 ]; do
     if curl -k -s -o /dev/null -w '%{http_code}' --max-time 3 \
-        "https://${PROJNAME}.ddev.site:6278/" | grep -qE '^(200|404)$'; then
+        "https://${PROJNAME}.ddev.site:6277/health" | grep -q '^200$'; then
       break
     fi
     sleep 2
     attempt=$((attempt + 1))
   done
 
+  # /health must return 200 — the inspector client polls it before connecting.
   run curl -k -s -o /dev/null -w '%{http_code}' --max-time 5 \
-    "https://${PROJNAME}.ddev.site:6278/"
-  refute_output "000"
+    "https://${PROJNAME}.ddev.site:6277/health"
+  assert_output "200"
+
+  # CORS header must be present so the browser-side UI on :6275 can fetch it.
+  run curl -k -s -i --max-time 5 \
+    -H "Origin: https://${PROJNAME}.ddev.site:6275" \
+    "https://${PROJNAME}.ddev.site:6277/health"
+  assert_output --partial "access-control-allow-origin"
 }
 
 # -----------------------------------------------------------------------------
@@ -111,7 +116,7 @@ teardown() {
   assert_output --partial "Client UI"
   assert_output --partial ":6275"
   assert_output --partial "Proxy"
-  assert_output --partial ":6278"
+  assert_output --partial ":6277"
 }
 
 @test "ddev mcp-inspector status reports running once UI is reachable" {

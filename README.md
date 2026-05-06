@@ -85,8 +85,10 @@ ddev mcp-inspector version      # show the pinned MCP Inspector version
 | What | URL |
 |---|---|
 | Client UI (browser) | `https://<project>.ddev.site:6275` (HTTP fallback `:6274`) |
-| Proxy server | `https://<project>.ddev.site:6278` (HTTP fallback `:6277`) |
+| Proxy server | `https://<project>.ddev.site:6277` |
 | From other DDEV containers | `http://mcp-inspector:6274` (UI), `http://mcp-inspector:6277` (proxy) |
+
+The proxy is HTTPS-only externally — modern browsers refuse mixed-content fetches from an HTTPS UI to an HTTP proxy.
 
 ## Configuration
 

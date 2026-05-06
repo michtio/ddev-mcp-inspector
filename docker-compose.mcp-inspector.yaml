@@ -17,14 +17,20 @@ services:
       SERVER_PORT: "6277"
       DANGEROUSLY_OMIT_AUTH: "true"
       MCP_AUTO_OPEN_ENABLED: "false"
-      MCP_PROXY_FULL_ADDRESS: "https://${DDEV_HOSTNAME}:6278"
+      # Inspector v0.21 derives the client's proxy URL from SERVER_PORT and
+      # the page's own protocol — i.e. when the UI loads over HTTPS:6275 it
+      # fetches https://<host>:6277/config. So we MUST expose the proxy
+      # over HTTPS on the same port number as the internal SERVER_PORT.
+      # MCP_PROXY_FULL_ADDRESS is set for completeness but is not
+      # authoritative for this version of the inspector.
+      MCP_PROXY_FULL_ADDRESS: "https://${DDEV_HOSTNAME}:6277"
       ALLOWED_ORIGINS: "https://${DDEV_HOSTNAME}:6275,http://${DDEV_HOSTNAME}:6274,http://localhost:6274,http://127.0.0.1:6274"
       MCP_SERVER_REQUEST_TIMEOUT: "10000"
       MCP_REQUEST_TIMEOUT_RESET_ON_PROGRESS: "true"
       MCP_REQUEST_MAX_TOTAL_TIMEOUT: "60000"
       VIRTUAL_HOST: ${DDEV_HOSTNAME}
-      HTTP_EXPOSE: "6274:6274,6277:6277"
-      HTTPS_EXPOSE: "6275:6274,6278:6277"
+      HTTP_EXPOSE: "6274:6274"
+      HTTPS_EXPOSE: "6275:6274,6277:6277"
     expose:
       - "6274"
       - "6277"

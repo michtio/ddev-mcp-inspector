@@ -30,8 +30,10 @@ what works.
 - GitHub Sponsors and Buy Me a Coffee links (see `.github/FUNDING.yml`).
 
 ### Fixed
-- Proxy URL on HTTPS:6278 now actually maps to the proxy port. The previous
-  beta documented this URL but never bound it.
+- Proxy URL on HTTPS:6277 actually works end-to-end. The previous beta
+  documented `:6278` but never bound it; this release exposes the proxy
+  on HTTPS:6277 directly (matching the inspector's `SERVER_PORT`, which
+  is what the inspector's browser-side JS uses to derive the proxy URL).
 - `ddev mcp-inspector status` returns truthful output. Previously always
   reported failure.
 

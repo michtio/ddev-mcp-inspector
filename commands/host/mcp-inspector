@@ -11,13 +11,12 @@ HOSTNAME="${DDEV_HOSTNAME:-${DDEV_SITENAME}.${DDEV_TLD:-ddev.site}}"
 
 CLIENT_HTTPS_URL="https://${HOSTNAME}:6275"
 CLIENT_HTTP_URL="http://${HOSTNAME}:6274"
-PROXY_HTTPS_URL="https://${HOSTNAME}:6278"
-PROXY_HTTP_URL="http://${HOSTNAME}:6277"
+PROXY_HTTPS_URL="https://${HOSTNAME}:6277"
 
 print_urls() {
-  printf "Client UI:   %s   (HTTP fallback: %s)\n" "${CLIENT_HTTPS_URL}" "${CLIENT_HTTP_URL}"
-  printf "Proxy:       %s   (HTTP fallback: %s)\n" "${PROXY_HTTPS_URL}" "${PROXY_HTTP_URL}"
-  printf "From inside DDEV containers: http://mcp-inspector:6274 (UI), http://mcp-inspector:6277 (proxy)\n"
+  printf "Client UI: %s   (HTTP fallback: %s)\n" "${CLIENT_HTTPS_URL}" "${CLIENT_HTTP_URL}"
+  printf "Proxy:     %s\n" "${PROXY_HTTPS_URL}"
+  printf "Inside DDEV containers: http://mcp-inspector:6274 (UI), http://mcp-inspector:6277 (proxy)\n"
 }
 
 container_running() {
